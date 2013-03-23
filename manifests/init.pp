@@ -33,23 +33,19 @@ class buildout {
         if $ensure == present {
             exec { "mkdir -p $name":
                 unless => "test -d $name",
-            }
+            }->
             file { "$name/bootstrap.py":
                 source => "puppet:///modules/buildout/bootstrap.py",
-                require => Exec["mkdir -p $name"],
-            }
+            }->
             file { "$name/buildout.cfg":
                 source => $source,
-                require => Exec["mkdir -p $name"],
-            }
+            }->
             exec { "${python} $name/bootstrap.py":
                 cwd => $name,
-                require => [File["$name/bootstrap.py"], File["$name/buildout.cfg"]],
                 unless => "test -f $name/bin/buildout",
-            }
+            }->
             exec { "$name/bin/buildout":
                 cwd => $name,
-                require => Exec["${python} $name/bootstrap.py"],
                 subscribe => File["$name/buildout.cfg"],
                 refreshonly => true,
             }
